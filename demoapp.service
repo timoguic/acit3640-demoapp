@@ -1,0 +1,13 @@
+[Unit]
+Description=ACIT3640 demo app
+After=network.target
+
+[Service]
+User=acit3640
+Group=users
+WorkingDirectory=/app
+ExecStart=/usr/local/bin/gunicorn -b 0.0.0.0:8000 app:app
+
+
+[Install]
+WantedBy=multi-user.target
