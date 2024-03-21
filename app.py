@@ -5,7 +5,7 @@ from pathlib import Path
 from flask import Flask, render_template
 
 import checks
-from config import DATABASE_URL, SHARED_FOLDER_PATH
+from config import DATABASE_URL, SHARED_FOLDER_PATH, HOSTNAME
 from db import db
 from models import Student
 
@@ -21,7 +21,11 @@ db.init_app(app)
 
 @app.context_processor
 def inject_config():
-    return dict(db_url=DATABASE_URL, shared_folder=Path(SHARED_FOLDER_PATH).resolve())
+    return dict(
+        hostname=HOSTNAME,
+        db_url=DATABASE_URL,
+        shared_folder=Path(SHARED_FOLDER_PATH).resolve()
+    )
 
 
 @app.route("/")
