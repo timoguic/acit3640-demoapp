@@ -37,11 +37,17 @@ def home():
 def create_record():
     name = f"Student {random.randint(1000, 9999)}"
     student_id = "A" + "".join([str(random.randint(0, 9)) for _ in range(7)])
-    student = Student(name=name, student_id=student_id)
-    db.session.add(student)
-    db.session.commit()
+    messages = []
+    try:
+        student = Student(name=name, student_id=student_id)
+        db.session.add(student)
+        db.session.commit()
+        messages.append((f"Student {student_id} created", "OK!"))
+    except Exception as e:
+        messages.append((f"Failed to create student {student_id}!", str(e)))
+    
     return render_template(
-        "base.html", messages=[(f"Student {student_id} created", "OK!")]
+        "base.html", messages=messages
     )
 
 
