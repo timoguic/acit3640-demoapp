@@ -37,13 +37,16 @@
             {{ config("Database", db_url) }}
             {{ config("Shared folder", shared_folder) }}
         </div>
+        {%- if message %}
+        <div class="alert alert-warning">
+            <h4>{{ message.0 }}</h4>
+            <p>{{ message.1 }}</p>
+        </div>
+        {% endif -%}
         <hr>
-        {% for msg in messages %}
+        {% for msg in checks %}
         <div>
-            <h4>{%- if messages|length > 1 %}
-                {{ loop.index }}.
-                {% else %}🥳&#160;&#160;
-                {%- endif %}{{ msg.0 }}</h4>
+            <h4>{{ loop.index }}. {{ msg.0 }}</h4>
             <pre class="bg-secondary-subtle p-2">{{ msg.1 }}</pre>
         </div>
         {% if not loop.last %}

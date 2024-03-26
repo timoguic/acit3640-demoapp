@@ -1,10 +1,12 @@
 import random
 import uuid
+
 from pathlib import Path
 
 from flask import Flask, render_template
 
-import checks
+from checks import get_checks_output
+
 from config import DATABASE_URL, SHARED_FOLDER_PATH, HOSTNAME
 from db import db
 from models import Student
@@ -24,31 +26,23 @@ def inject_config():
     return dict(
         hostname=HOSTNAME,
         db_url=DATABASE_URL,
-        shared_folder=Path(SHARED_FOLDER_PATH).resolve()
+        shared_folder=Path(SHARED_FOLDER_PATH).resolve(),
+        checks=get_checks_output(),
     )
-
-
-@app.route("/")
-def home():
-    return render_template("base.html")
-
 
 @app.route("/create_record", methods=["POST"])
 def create_record():
     name = f"Student {random.randint(1000, 9999)}"
     student_id = "A" + "".join([str(random.randint(0, 9)) for _ in range(7)])
-    messages = []
     try:
         student = Student(name=name, student_id=student_id)
         db.session.add(student)
         db.session.commit()
-        messages.append((f"Student {student_id} created", "OK!"))
+        message = (f"Student {student_id} created", "OK!")
     except Exception as e:
-        messages.append((f"Failed to create student {student_id}!", str(e)))
+        message = (f"Failed to create student {student_id}!", str(e))
     
-    return render_template(
-        "base.html", messages=messages
-    )
+    return render_template("base.html", message=message)
 
 
 @app.route("/create_tables", methods=["POST"])
@@ -62,26 +56,19 @@ def create_file():
     path = Path(SHARED_FOLDER_PATH)
     contents = str(random.randint(1000, 9999))
     filename = f"{uuid.uuid4()}.acit3640"
-    with open(path / filename, "w") as fp:
-        fp.write(contents)
+    try:
+        with open(path / filename, "w") as fp:
+            fp.write(contents)
+        message = (f"File {filename} created", "OK!")
+    except Exception as e:
+        message = (f"Failed to create file {filename}!", str(e))
 
-    return render_template("base.html", messages=[(f"File {filename} created", "OK!")])
+    return render_template("base.html", message=message)
 
 
-@app.route("/", methods=["POST"])
-def check():
-    messages = []
-    funcs = [
-        ("Database connection", checks.db_connection),
-        ("Tables", checks.check_tables),
-        ("Data", checks.check_data),
-        ("Shared folder", checks.check_files),
-        ("Check files", checks.list_files),
-    ]
-
-    messages = [(label, func()) for label, func in funcs]
-
-    return render_template("base.html", messages=messages)
+@app.route("/", methods=["GET", "POST"])
+def home():
+    return render_template("base.html")
 
 
 if __name__ == "__main__":

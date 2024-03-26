@@ -7,6 +7,17 @@ from config import SHARED_FOLDER_PATH
 from db import db
 from models import Student
 
+def get_checks_output():
+    funcs = [
+        ("Database connection", db_connection),
+        ("Tables", check_tables),
+        ("Data", check_data),
+        ("Shared folder", check_files),
+        ("Check files", list_files),
+    ]
+
+    messages = [(label, func()) for label, func in funcs]
+    return messages
 
 def db_connection():
     try:
